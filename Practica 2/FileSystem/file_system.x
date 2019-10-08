@@ -1,7 +1,7 @@
 struct write_data {
   string file_name<32>;
   int amount;
-  string data<>;
+  opaque data<>;
 };
 
 struct read_data {
@@ -11,7 +11,7 @@ struct read_data {
 };
 
 struct file_data {
-  string data<>;
+  opaque data<>;
 };
 
 program file_system {

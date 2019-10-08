@@ -5,51 +5,112 @@
  */
 
 #include "file_system.h"
+#include "stdio.h"
+#include "string.h"
 
+file_data* read_local(read_data read_arg, CLIENT* clnt) {
+	file_data  *result;
+	result = read_1(&read_arg, clnt);
+	if (result == (file_data *) NULL) {
+		clnt_perror (clnt, "call failed");
+	}
+	return result;
+}
+
+int* write_local(write_data write_arg, CLIENT* clnt) {
+	int  *result;
+	result = write_1(&write_arg, clnt);
+	if (result == (int *) NULL) {
+		clnt_perror (clnt, "call failed");
+	}
+	return result;
+} 
 
 void
 file_system_1(char *host)
 {
 	CLIENT *clnt;
+	file_data  *result_2;
 	int  *result_1;
-	write_data  write_1_arg;
-	char * *result_2;
-	read_data  read_1_arg;
 
-	#ifndef	DEBUG
-		clnt = clnt_create (host, file_system, display_ver, "udp");
-		if (clnt == NULL) {
-			clnt_pcreateerror (host);
-			exit (1);
+#ifndef	DEBUG
+	clnt = clnt_create (host, file_system, display_ver, "udp");
+	if (clnt == NULL) {
+		clnt_pcreateerror (host);
+		exit (1);
+	}
+#endif	/* DEBUG */
+
+	char* buffer;
+	char* pch;
+	size_t bufsize = 256;
+
+	buffer = (char *)malloc(bufsize * sizeof(char));
+
+	while (1){
+    getline(&buffer, &bufsize, stdin);
+
+    pch = strtok (buffer, " ");
+
+		if(!strcmp(pch,"write")) {
+			write_data  write_arg;
+			write_arg.file_name = strtok (NULL, " ");
+			write_arg.amount = atoi(strtok (NULL, " "));
+			write_arg.data = strtok (NULL, " ");
+
+			int* write_result = write_local(write_arg,clnt);
+			printf("%d bytes were written\n",*write_result);
+			continue;
 		}
-	#endif	/* DEBUG */
-	
-	write_1_arg.file_name = "hola.txt\0";
-	write_1_arg.amount = 10;
-	write_1_arg.data = "aaaaaaabbbbbbc\0";
 
-/*
-	result_1 = write_1(&write_1_arg, clnt);
-	if (result_1 == (int *) NULL) {
-		clnt_perror (clnt, "call failed");
+		if (!strcmp(pch,"read")) {
+			read_data read_arg;
+			read_arg.file_name = strtok (NULL, " \n");
+			read_arg.amount = atoi(strtok (NULL, " \n"));
+			read_arg.pos = atoi(strtok (NULL, " \n"));
+
+			file_data* read_result = read_local(read_arg, clnt);
+			printf("%s\n",read_result->data);
+			continue;
+		}
+
+		if (!strcmp(pch,"run")) {
+			//Reading file from server
+
+			read_data read_arg;
+			read_arg.file_name = strtok (NULL, " \n");
+			read_arg.amount = 32768;
+			read_arg.pos = 0;
+
+			result_2 = read_local(read_arg, clnt);
+			if (result_2 == (file_data *) NULL) {
+				clnt_perror (clnt, "call failed");
+			} else {
+				//Copying file to local
+				FILE* fp;
+				fp = fopen(read_arg.file_name, "w");
+				printf("%s\n",result_2->data);
+				if(fp) {
+					fputs(result_2->data,fp);
+  			}
+  			fclose(fp);
+
+				//Writing file to server
+				write_data  write_arg;
+				write_arg.file_name = strcat(read_arg.file_name,"_copy");
+				write_arg.amount = strlen(result_2->data);
+				write_arg.data = result_2->data;
+				
+				write_local(write_arg,clnt);
+			}
+			continue;
+		}		
+		printf("Command not recognized\n");
 	}
-*/		
-	read_1_arg.file_name = "hola.txt\0";
-	read_1_arg.amount = 10;
-	read_1_arg.pos = 2;
 
-	result_2 = read_1(&read_1_arg, clnt);
-	/*
-	if (result_2 == (char **) NULL) {
-		clnt_perror (clnt, "call failed");
-	}
-
-	printf("%s",*result_2);
-	*/
-
-	#ifndef	DEBUG
-		clnt_destroy (clnt);
-	#endif	 /* DEBUG */
+#ifndef	DEBUG
+	clnt_destroy (clnt);
+#endif	 /* DEBUG */
 }
 
 

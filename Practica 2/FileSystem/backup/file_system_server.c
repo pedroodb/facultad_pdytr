@@ -5,6 +5,7 @@
  */
 
 #include "file_system.h"
+#include "string.h"
 
 //Funcion para concatenar la direccion del archivo a la de la carpeta raiz del file system
 char* getAddress(char* file){
@@ -25,30 +26,38 @@ write_1_svc(write_data *argp, struct svc_req *rqstp)
 
   fp = fopen(address, "a");
   if(fp) {
+    printf("Writting into file: '%s', %d chars of '%s'\n",address,argp->amount,argp->data);
     for (i = 0; i < argp->amount && i < strlen(argp->data); i++) {
       fputc(argp->data[i],fp);
     }
   }
+  fclose(fp);
 
 	return &i;
 }
 
-char **
+file_data *
 read_1_svc(read_data *argp, struct svc_req *rqstp)
 {
-	static char * file;
+	static file_data  result;
 
+	char * file;
 	FILE* fp;
-  char* address = (char*) malloc(sizeof(char) * 100);
+  char* address = (char*) malloc(sizeof(char) * 32);
   address = getAddress(argp->file_name);
 
   file = (char*) malloc(sizeof(char)*argp->amount);
   fp = fopen(address, "r");
-  fseek(fp, argp->pos, 0);
   if(fp) {
-    fgets(file, argp->amount, fp);
+    fseek(fp, argp->pos, 0);
+    printf("Reading from file: '%s', %d chars since position %d \n",address,argp->amount,argp->pos);
+    fgets(file, argp->amount+1, fp);
+	  result.data = file;
+  } else {
+    printf("Error on trying to read from not existent file: '%s'\n",address);
+    result.data = "Err: file not found";
   }
   fclose(fp);
 
-	return &file;
+	return &result;
 }

@@ -17,7 +17,10 @@ extern "C" {
 struct write_data {
 	char *file_name;
 	int amount;
-	char *data;
+	struct {
+		u_int data_len;
+		char *data_val;
+	} data;
 };
 typedef struct write_data write_data;
 
@@ -29,7 +32,10 @@ struct read_data {
 typedef struct read_data read_data;
 
 struct file_data {
-	char *data;
+	struct {
+		u_int data_len;
+		char *data_val;
+	} data;
 };
 typedef struct file_data file_data;
 

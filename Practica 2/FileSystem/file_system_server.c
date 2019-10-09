@@ -40,7 +40,7 @@ write_1_svc(write_data *argp, struct svc_req *rqstp)
 file_data *
 read_1_svc(read_data *argp, struct svc_req *rqstp)
 {
-	static file_data  result;
+	static file_data result;
 
 	char * file;
 	FILE* fp;
@@ -54,6 +54,8 @@ read_1_svc(read_data *argp, struct svc_req *rqstp)
 		printf("Reading from file: '%s', %d chars since position %d \n",address,argp->amount,argp->pos);
 		fread(file, sizeof(char), argp->amount, fp);
 		result.data.data_val = file;
+		fseek(fp, 0L, SEEK_END);
+		result.data.data_len = ftell(fp);
 		printf("File read: '%s'\n",result.data.data_val);
 	} else {
 		printf("Error on trying to read from not existent file: '%s'\n",address);

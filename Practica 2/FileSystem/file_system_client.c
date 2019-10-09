@@ -8,13 +8,16 @@
 #include "stdio.h"
 #include "string.h"
 
-file_data* read_local(read_data read_arg, CLIENT* clnt) {
+int read_local(read_data read_arg, CLIENT* clnt) {
 	file_data *result;
 	result = read_1(&read_arg, clnt);
 	if (result == (file_data *) NULL) {
 		clnt_perror (clnt, "call failed");
 	}
-	return result;
+	FILE* fp = fopen(read_arg.file_name, "a");
+	fwrite(result->data.data_val, sizeof(char), result->data.data_len, fp);
+	fclose(fp);
+	return 1;
 }
 
 int* write_local(write_data write_arg, CLIENT* clnt) {
@@ -70,8 +73,7 @@ file_system_1(char *host)
 			read_arg.amount = atoi(strtok (NULL, " \n"));
 			read_arg.pos = atoi(strtok (NULL, " \n"));
 
-			file_data* read_result = read_local(read_arg, clnt);
-			printf("%s\n",read_result->data.data_val);
+			read_local(read_arg, clnt);
 			continue;
 		}
 

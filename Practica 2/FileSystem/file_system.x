@@ -1,17 +1,19 @@
 struct write_data {
   string file_name<32>;
-  int amount;
   opaque data<>;
+  int amount;
 };
 
 struct read_data {
   string file_name<32>;
-  int pos;
   int amount;
+  int pos;
 };
 
 struct file_data {
   opaque data<>;
+  int finished;
+  int error;
 };
 
 program file_system {

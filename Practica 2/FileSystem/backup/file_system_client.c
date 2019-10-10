@@ -8,13 +8,16 @@
 #include "stdio.h"
 #include "string.h"
 
-file_data* read_local(read_data read_arg, CLIENT* clnt) {
-	file_data  *result;
+int read_local(read_data read_arg, CLIENT* clnt) {
+	file_data *result;
 	result = read_1(&read_arg, clnt);
 	if (result == (file_data *) NULL) {
 		clnt_perror (clnt, "call failed");
 	}
-	return result;
+	FILE* fp = fopen(read_arg.file_name, "a");
+	fwrite(result->data.data_val, sizeof(char), result->data.data_len, fp);
+	fclose(fp);
+	return 1;
 }
 
 int* write_local(write_data write_arg, CLIENT* clnt) {
@@ -56,7 +59,8 @@ file_system_1(char *host)
 			write_data  write_arg;
 			write_arg.file_name = strtok (NULL, " ");
 			write_arg.amount = atoi(strtok (NULL, " "));
-			write_arg.data = strtok (NULL, " ");
+			write_arg.data.data_len = write_arg.amount;
+			write_arg.data.data_val = strtok (NULL, " ");
 
 			int* write_result = write_local(write_arg,clnt);
 			printf("%d bytes were written\n",*write_result);
@@ -69,8 +73,7 @@ file_system_1(char *host)
 			read_arg.amount = atoi(strtok (NULL, " \n"));
 			read_arg.pos = atoi(strtok (NULL, " \n"));
 
-			file_data* read_result = read_local(read_arg, clnt);
-			printf("%s\n",read_result->data);
+			read_local(read_arg, clnt);
 			continue;
 		}
 
@@ -89,17 +92,17 @@ file_system_1(char *host)
 				//Copying file to local
 				FILE* fp;
 				fp = fopen(read_arg.file_name, "w");
-				printf("%s\n",result_2->data);
+				printf("%s\n",result_2->data.data_val);
 				if(fp) {
-					fputs(result_2->data,fp);
+					fputs(result_2->data.data_val,fp);
   			}
   			fclose(fp);
 
 				//Writing file to server
 				write_data  write_arg;
 				write_arg.file_name = strcat(read_arg.file_name,"_copy");
-				write_arg.amount = strlen(result_2->data);
-				write_arg.data = result_2->data;
+				write_arg.amount = strlen(result_2->data.data_val);
+				write_arg.data.data_val = result_2->data.data_val;
 				
 				write_local(write_arg,clnt);
 			}

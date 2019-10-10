@@ -4,6 +4,8 @@
  * as a guideline for developing your own functions.
  */
 
+
+
 #include "file_system.h"
 #include "string.h"
 
@@ -18,46 +20,48 @@ char* getAddress(char* file){
 int *
 write_1_svc(write_data *argp, struct svc_req *rqstp)
 {
-	static int i = -1;
+	static int min = -1;
 
 	FILE* fp;
-  char* address = (char*) malloc(sizeof(char) * 100);
-  address = getAddress(argp->file_name);
+	char* address = (char*) malloc(sizeof(char) * 100);
+	address = getAddress(argp->file_name);
 
-  fp = fopen(address, "a");
-  if(fp) {
-    printf("Writting into file: '%s', %d chars of '%s'\n",address,argp->amount,argp->data);
-    for (i = 0; i < argp->amount && i < strlen(argp->data); i++) {
-      fputc(argp->data[i],fp);
-    }
-  }
-  fclose(fp);
+	fp = fopen(address, "a");
+	if(fp) {
+		min = (argp->data.data_len > argp->amount) ? argp->data.data_len : argp->amount;
+		printf("Writting into file: '%s', %d chars of '%s'\n",address,argp->amount,argp->data.data_val);
+		fwrite(argp->data.data_val, min, sizeof(char), fp);
+	}
+	fclose(fp);
 
-	return &i;
+	return &min;
 }
 
 file_data *
 read_1_svc(read_data *argp, struct svc_req *rqstp)
 {
-	static file_data  result;
+	static file_data result;
 
 	char * file;
 	FILE* fp;
-  char* address = (char*) malloc(sizeof(char) * 32);
-  address = getAddress(argp->file_name);
+	char* address = (char*) malloc(sizeof(char) * 32);
+	address = getAddress(argp->file_name);
 
-  file = (char*) malloc(sizeof(char)*argp->amount);
-  fp = fopen(address, "r");
-  if(fp) {
-    fseek(fp, argp->pos, 0);
-    printf("Reading from file: '%s', %d chars since position %d \n",address,argp->amount,argp->pos);
-    fgets(file, argp->amount+1, fp);
-	  result.data = file;
-  } else {
-    printf("Error on trying to read from not existent file: '%s'\n",address);
-    result.data = "Err: file not found";
-  }
-  fclose(fp);
+	file = (char*) malloc(sizeof(char)*argp->amount);
+	fp = fopen(address, "r");
+	if(fp) {
+		fseek(fp, argp->pos, 0);
+		printf("Reading from file: '%s', %d chars since position %d \n",address,argp->amount,argp->pos);
+		fread(file, sizeof(char), argp->amount, fp);
+		result.data.data_val = file;
+		fseek(fp, 0L, SEEK_END);
+		result.data.data_len = ftell(fp);
+		printf("File read: '%s'\n",result.data.data_val);
+	} else {
+		printf("Error on trying to read from not existent file: '%s'\n",address);
+		result.data.data_val = "Err: file not found";
+	}
 
+	fclose(fp);
 	return &result;
 }

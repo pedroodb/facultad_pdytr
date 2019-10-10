@@ -12,9 +12,9 @@ xdr_write_data (XDR *xdrs, write_data *objp)
 
 	 if (!xdr_string (xdrs, &objp->file_name, 32))
 		 return FALSE;
-	 if (!xdr_int (xdrs, &objp->amount))
-		 return FALSE;
 	 if (!xdr_bytes (xdrs, (char **)&objp->data.data_val, (u_int *) &objp->data.data_len, ~0))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->amount))
 		 return FALSE;
 	return TRUE;
 }
@@ -26,9 +26,9 @@ xdr_read_data (XDR *xdrs, read_data *objp)
 
 	 if (!xdr_string (xdrs, &objp->file_name, 32))
 		 return FALSE;
-	 if (!xdr_int (xdrs, &objp->pos))
-		 return FALSE;
 	 if (!xdr_int (xdrs, &objp->amount))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->pos))
 		 return FALSE;
 	return TRUE;
 }
@@ -39,6 +39,10 @@ xdr_file_data (XDR *xdrs, file_data *objp)
 	register int32_t *buf;
 
 	 if (!xdr_bytes (xdrs, (char **)&objp->data.data_val, (u_int *) &objp->data.data_len, ~0))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->finished))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->error))
 		 return FALSE;
 	return TRUE;
 }

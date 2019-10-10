@@ -16,18 +16,18 @@ extern "C" {
 
 struct write_data {
 	char *file_name;
-	int amount;
 	struct {
 		u_int data_len;
 		char *data_val;
 	} data;
+	int amount;
 };
 typedef struct write_data write_data;
 
 struct read_data {
 	char *file_name;
-	int pos;
 	int amount;
+	int pos;
 };
 typedef struct read_data read_data;
 
@@ -36,6 +36,8 @@ struct file_data {
 		u_int data_len;
 		char *data_val;
 	} data;
+	int finished;
+	int error;
 };
 typedef struct file_data file_data;
 

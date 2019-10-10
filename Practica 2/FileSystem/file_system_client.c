@@ -17,8 +17,8 @@ int read_local(read_data read_arg, CLIENT* clnt) {
 	}
 }
 
-int write_local(write_data write_arg, CLIENT* clnt) {
-	int result;
+int send_file(write_data write_arg, CLIENT* clnt) {
+	int result = 0;
 
 	FILE* fp = fopen(write_arg.file_name, "r");
 
@@ -48,10 +48,9 @@ int write_local(write_data write_arg, CLIENT* clnt) {
 			}
 		}
 	} else {
-		printf("Error opening file");
+		result = -1;
 	}
 	fclose(fp);
-
 	return result;
 }
 
@@ -84,8 +83,12 @@ void file_system_1(char *host) {
 			write_arg.file_name = strtok (NULL, " ");
 			write_arg.amount = atoi(strtok (NULL, " "));
 
-			int write_result = write_local(write_arg,clnt);
-			printf("%d bytes were written\n",write_result);
+			int bytes_written = send_file(write_arg,clnt);
+			if(bytes_written != -1) {
+				printf("%d bytes were written\n",bytes_written);
+			} else {
+				printf("Unable to send file");
+			}
 			continue;
 		}
 

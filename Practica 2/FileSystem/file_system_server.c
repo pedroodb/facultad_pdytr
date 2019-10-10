@@ -19,7 +19,7 @@ int* write_1_svc(write_data *argp, struct svc_req *rqstp) {
 	FILE* fp = fopen(address, "a");
 	if(fp) {
 		min = (argp->data.data_len < argp->amount) ? argp->data.data_len : argp->amount;
-		printf("Writting into file: '%s', %d bytes\n",address,argp->amount);
+		printf("Writting into file: '%s', %d bytes\n",address,min);
 		fwrite(argp->data.data_val, min, sizeof(char), fp);
 	} else {
 		printf("Error on trying to write into non existent file: '%s'\n",address);

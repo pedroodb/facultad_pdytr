@@ -45,8 +45,9 @@ file_data* read_1_svc(read_data *argp, struct svc_req *rqstp) {
 		printf("Reading from file: '%s', %d chars since position %d \n",address,argp->amount,argp->pos);
 		fread(file, sizeof(char), argp->amount, fp);
 		result.data.data_val = file;
-		fseek(fp, 0L, SEEK_END);
 		result.data.data_len = ftell(fp);
+		fseek(fp, 0L, SEEK_END);
+		result.finished = (ftell(fp) > result.data.data_len) ? 1 : 0;
 	} else {
 		printf("Error on trying to read from non existent file: '%s'\n",address);
 		result.error = 1;

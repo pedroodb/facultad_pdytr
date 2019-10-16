@@ -2,9 +2,9 @@
 #include "stdio.h"
 #include "string.h"
 
-int read_local(read_data read_arg, CLIENT* clnt) {
+int rcv_file(read_data read_arg, CLIENT* clnt) {
 
-	file_data *result;
+	file_data* result;
 	result = read_1(&read_arg, clnt);
 
 	if ((result == (file_data *) NULL) || (result->error == 1)) {
@@ -13,6 +13,8 @@ int read_local(read_data read_arg, CLIENT* clnt) {
 		FILE* fp = fopen(read_arg.file_name, "a");
 		fwrite(result->data.data_val, sizeof(char), result->data.data_len, fp);
 		fclose(fp);
+		
+		printf("fin? %d",result->finished);
 		return 1;
 	}
 }
@@ -24,19 +26,14 @@ int send_file(write_data write_arg, CLIENT* clnt) {
 
 	write_arg.data.data_val = malloc(4096*sizeof(char));
 
-	int bytes_left = write_arg.amount;
 	int bytes_to_send = 4096;
 
 	if(fp) {
 
-		while(!feof(fp) && (bytes_left > 0)){
+		while(!feof(fp)){
 
-			if(bytes_left < 4096) {
-				bytes_to_send = bytes_left;
-			}
 			write_arg.data.data_len = fread(write_arg.data.data_val, sizeof(char), bytes_to_send, fp);
 			write_arg.amount = write_arg.data.data_len;
-			bytes_left -= write_arg.data.data_len;
 
 			int* bytes_written;
 			bytes_written = write_1(&write_arg, clnt);
@@ -78,10 +75,9 @@ void file_system_1(char *host) {
 
     pch = strtok (buffer, " ");
 
-		if(!strcmp(pch,"write")) {
+		if(!strcmp(pch,"send")) {
 			write_data  write_arg;
-			write_arg.file_name = strtok (NULL, " ");
-			write_arg.amount = atoi(strtok (NULL, " "));
+			write_arg.file_name = strtok (NULL, " \n");
 
 			int bytes_written = send_file(write_arg,clnt);
 			if(bytes_written != -1) {
@@ -98,7 +94,7 @@ void file_system_1(char *host) {
 			read_arg.amount = atoi(strtok (NULL, " \n"));
 			read_arg.pos = atoi(strtok (NULL, " \n"));
 
-			read_local(read_arg, clnt);
+			rcv_file(read_arg, clnt);
 			continue;
 		}
 

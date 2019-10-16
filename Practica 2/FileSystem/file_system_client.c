@@ -9,29 +9,31 @@ int rcv_file(read_data read_arg, CLIENT* clnt) {
 
 	if ((result == (file_data *) NULL) || (result->error == 1)) {
 		clnt_perror (clnt, "call failed");
+		return -1;
 	} else {
-		FILE* fp = fopen(read_arg.file_name, "a");
+		FILE* fp = fopen(read_arg.file_name, "w");
 		fwrite(result->data.data_val, sizeof(char), result->data.data_len, fp);
+		if(!result->finished) {
+			while(!result->finished) {
+				read_arg.pos = read_arg.pos + result->data.data_len;
+				result = read_1(&read_arg, clnt);
+				fwrite(result->data.data_val, sizeof(char), result->data.data_len, fp);
+			}
+		}
 		fclose(fp);
-		
-		printf("fin? %d",result->finished);
-		return 1;
+		return 0;
 	}
 }
 
 int send_file(write_data write_arg, CLIENT* clnt) {
+
 	int result = 0;
-
 	FILE* fp = fopen(write_arg.file_name, "r");
-
-	write_arg.data.data_val = malloc(4096*sizeof(char));
-
-	int bytes_to_send = 4096;
+	write_arg.data.data_val = malloc(1024*sizeof(char));
+	int bytes_to_send = 1024;
 
 	if(fp) {
-
 		while(!feof(fp)){
-
 			write_arg.data.data_len = fread(write_arg.data.data_val, sizeof(char), bytes_to_send, fp);
 			write_arg.amount = write_arg.data.data_len;
 
@@ -88,11 +90,11 @@ void file_system_1(char *host) {
 			continue;
 		}
 
-		if (!strcmp(pch,"read")) {
+		if (!strcmp(pch,"get")) {
 			read_data read_arg;
 			read_arg.file_name = strtok (NULL, " \n");
 			read_arg.amount = atoi(strtok (NULL, " \n"));
-			read_arg.pos = atoi(strtok (NULL, " \n"));
+			read_arg.pos = 0;
 
 			rcv_file(read_arg, clnt);
 			continue;
@@ -129,7 +131,7 @@ void file_system_1(char *host) {
 			// }
 			continue;
 		}		
-		printf("Command not recognized\n");
+		printf("Command not recognized, use send 'file_name' or get 'file_name' 'amount'\n");
 	}
 
 #ifndef	DEBUG

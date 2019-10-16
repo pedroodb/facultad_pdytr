@@ -4,7 +4,7 @@
 
 //Funcion para concatenar la direccion del archivo a la de la carpeta raiz del file system
 char* getAddress(char* file){
-  char* address = (char*) malloc(sizeof(char) * 100);
+  char* address = (char*) malloc(sizeof(char) * 32);
   strcpy(address, "FS/");
   strcat(address,file);
   return address;
@@ -13,7 +13,7 @@ char* getAddress(char* file){
 int* write_1_svc(write_data *argp, struct svc_req *rqstp) {
 	static int min = -1;
 
-	char* address = (char*) malloc(sizeof(char) * 100);
+	char* address = (char*) malloc(sizeof(char) * 32);
 	address = getAddress(argp->file_name);
 
 	FILE* fp = fopen(address, "a");
@@ -42,12 +42,18 @@ file_data* read_1_svc(read_data *argp, struct svc_req *rqstp) {
 	
 	if(fp) {
 		fseek(fp, argp->pos, 0);
-		printf("Reading from file: '%s', %d chars since position %d \n",address,argp->amount,argp->pos);
-		fread(file, sizeof(char), argp->amount, fp);
+
+		int bytes_to_read = (argp->amount < 1024) ? argp->amount : 1024;
+
+		printf("Reading from file: '%s', %d chars since position %d \n",address,bytes_to_read,argp->pos);
+
+		result.data.data_len = fread(file, sizeof(char), bytes_to_read, fp);
 		result.data.data_val = file;
-		result.data.data_len = ftell(fp);
 		fseek(fp, 0L, SEEK_END);
-		result.finished = (ftell(fp) > result.data.data_len) ? 1 : 0;
+
+		//printf("ftell: %ld --- datalen: %d, pos: %d\n",ftell(fp),result.data.data_len,argp->pos);
+
+		result.finished = (ftell(fp) <= (result.data.data_len + argp->pos)) ? 1 : 0;
 	} else {
 		printf("Error on trying to read from non existent file: '%s'\n",address);
 		result.error = 1;

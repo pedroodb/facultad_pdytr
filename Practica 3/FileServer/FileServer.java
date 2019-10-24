@@ -22,28 +22,31 @@ public class FileServer extends UnicastRemoteObject implements RemoteFSIface {
 
   public int write(String fileName, int amount, byte[] data) throws RemoteException{
     try {
-      FileOutputStream fos = new FileOutputStream(this.address + fileName);
+      File file = new File(this.address + fileName);
+      FileOutputStream fos = new FileOutputStream(file,true);
       fos.write(data,0,amount);
       fos.close();
-      System.out.println(amount + " bytes written into " + fileName);
+      System.out.println("Se escribieron " + amount + " bytes en " + fileName);
       return amount;
     } catch (IOException e) {
-      e.printStackTrace();
+      System.out.println("Error leyendo archivo " + fileName);
       return -1;
     }
   }
 
-  public byte[] read(String fileName, int offset, int amount) throws RemoteException{
+  public FileData read(String fileName, int offset, int amount) throws RemoteException{
     try {
       File file = new File(this.address + fileName);
-      byte[] bytesArray = new byte[amount]; 
-      FileInputStream stream = new FileInputStream(file);
-      stream.skip(offset);
-      stream.read(bytesArray);
-      stream.close();
-      return bytesArray;
+      FileInputStream fis = new FileInputStream(file);
+      fis.skip(offset);
+      byte[] bytesArray = new byte[Math.min(amount,fis.available())]; 
+      int amountRead = fis.read(bytesArray);
+      boolean finished = fis.available() == 0;
+      fis.close();
+      System.out.println("Se leyeron " + amountRead + " bytes de " + fileName);
+      return new FileData(bytesArray,finished,amountRead);
     } catch (IOException e) {
-      e.printStackTrace();
+      System.out.println("Error leyendo archivo " + fileName);
       return null;
     }
   }

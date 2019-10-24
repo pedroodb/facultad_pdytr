@@ -6,6 +6,6 @@ public interface RemoteFSIface extends Remote {
 
   public int write(String fileName, int amount, byte[] data) throws RemoteException;
 
-  public byte[] read(String fileName, int offset, int amount) throws RemoteException;
+  public FileData read(String fileName, int offset, int amount) throws RemoteException;
 
 }

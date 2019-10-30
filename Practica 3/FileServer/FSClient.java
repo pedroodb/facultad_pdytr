@@ -8,9 +8,9 @@ import java.io.*;
 
 public class FSClient {
 
-  public static void send(RemoteFSIface fs, String fname) {
+  public static void send(RemoteFSIface fs, String fname, String source) {
     try {
-      File file = new File(fname);
+      File file = new File(source);
       FileInputStream is = new FileInputStream(file);
       byte[] fileData = new byte[2048];
       int written = 0;
@@ -21,19 +21,17 @@ public class FSClient {
       is.close();
       System.out.println("Se enviaron " + written + " bytes de " + fname);
     } catch (RemoteException e) {
-      e.printStackTrace();
       System.out.print("Error en la escritura\n");
     } catch (IOException e) {
-      e.printStackTrace();
       System.out.print("Error accediendo al archivo local\n");
     }
   }
 
-  public static void get(RemoteFSIface fs, String fname) {
+  public static void get(RemoteFSIface fs, String fname, String destiny) {
     try {
       FileData readData = fs.read(fname, 0, 2048);
       if (readData != null) {
-        File localFile = new File(fname);
+        File localFile = new File(destiny);
         FileOutputStream fos = new FileOutputStream(localFile);
         fos.write(readData.getData());
         int offset = 0;
@@ -45,13 +43,11 @@ public class FSClient {
         fos.close();
         System.out.println("Se leyeron " + (offset+readData.getAmount()) + " bytes de " + fname);
       } else {
-        System.out.println("No se encontro el archivo");
+        System.out.println("No se encontro el archivo\n");
       }
     } catch (RemoteException e) {
-      e.printStackTrace();
       System.out.print("Error en la escritura\n");
     } catch (IOException e) {
-      e.printStackTrace();
       System.out.print("Error accediendo al archivo local\n");
     }
   }
@@ -71,12 +67,14 @@ public class FSClient {
         String fileName;
         switch (command) {
           case "send":
+            String source = sc.next(Pattern.compile("\\S+"));
             fileName = sc.next(Pattern.compile("\\S+"));
-            send(fs,fileName);
+            send(fs,fileName,source);
             break;
           case "get":
             fileName = sc.next(Pattern.compile("\\S+"));
-            get(fs,fileName);
+            String destiny = sc.next(Pattern.compile("\\S+"));
+            get(fs,fileName,destiny);
             break;
           case "exit":
             sc.close();

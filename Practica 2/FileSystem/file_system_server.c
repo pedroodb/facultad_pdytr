@@ -11,22 +11,20 @@ char* getAddress(char* file){
 }
 
 int* write_1_svc(write_data *argp, struct svc_req *rqstp) {
-	static int min = -1;
 
 	char* address = (char*) malloc(sizeof(char) * 32);
 	address = getAddress(argp->file_name);
 
 	FILE* fp = fopen(address, "a");
 	if(fp) {
-		min = (argp->data.data_len < argp->amount) ? argp->data.data_len : argp->amount;
-		printf("Writting into file: '%s', %d bytes\n",address,min);
-		fwrite(argp->data.data_val, min, sizeof(char), fp);
+		printf("Se escribieron %d bytes en el archivo: '%s'\n",argp->data.data_len,address);
+		fwrite(argp->data.data_val, argp->data.data_len, sizeof(char), fp);
 	} else {
-		printf("Error on trying to write into non existent file: '%s'\n",address);
+		printf("Error tratando de escribir a archivo: '%s'\n",address);
 	}
 
 	fclose(fp);
-	return &min;
+	return &argp->data.data_len;
 }
 
 file_data* read_1_svc(read_data *argp, struct svc_req *rqstp) {
@@ -45,17 +43,15 @@ file_data* read_1_svc(read_data *argp, struct svc_req *rqstp) {
 
 		int bytes_to_read = (argp->amount < 1024) ? argp->amount : 1024;
 
-		printf("Reading from file: '%s', %d chars since position %d \n",address,bytes_to_read,argp->pos);
-
 		result.data.data_len = fread(file, sizeof(char), bytes_to_read, fp);
 		result.data.data_val = file;
 		fseek(fp, 0L, SEEK_END);
 
-		//printf("ftell: %ld --- datalen: %d, pos: %d\n",ftell(fp),result.data.data_len,argp->pos);
-
 		result.finished = (ftell(fp) <= (result.data.data_len + argp->pos)) ? 1 : 0;
+
+		printf("Se leyeron %d bytes de: '%s', desde la posicion %d \n",result.data.data_len,address,argp->pos);
 	} else {
-		printf("Error on trying to read from non existent file: '%s'\n",address);
+		printf("Error tratando de abrir archivo inexistente: '%s'\n",address);
 		result.error = 1;
 	}
 

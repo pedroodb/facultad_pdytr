@@ -20,7 +20,6 @@ struct write_data {
 		u_int data_len;
 		char *data_val;
 	} data;
-	int amount;
 };
 typedef struct write_data write_data;
 

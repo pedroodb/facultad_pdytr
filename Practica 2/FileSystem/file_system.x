@@ -1,7 +1,6 @@
 struct write_data {
   string file_name<32>;
   opaque data<>;
-  int amount;
 };
 
 struct read_data {

@@ -1,0 +1,1 @@
+javac -cp "../jade/lib/jade.jar" -d ../classes/ src/examples/Ej1/*.java

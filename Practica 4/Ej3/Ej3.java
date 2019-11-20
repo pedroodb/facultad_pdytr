@@ -1,5 +1,6 @@
 import jade.core.*;
 
+import java.lang.IndexOutOfBoundsException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.io.File;
@@ -14,35 +15,48 @@ public class Ej3 extends Agent {
 	Location origin;
 	String destiny;
 	String fileName;
+    String mode;
+
     FileData file;
     int offset = 0;
 
 	public void setup() {
-		this.origin = here();
-		this.fileName = (String)getArguments()[0];
-		
-		System.out.println("\n\nHola, agente con nombre local " + getLocalName());
-		System.out.println("Se traera el archivo " + this.fileName);
-		// Para migrar el agente
 		try {
+            this.origin = here();
+            this.mode = (String)getArguments()[0];
+            this.fileName = (String)getArguments()[1];
+
+            if(this.mode.equals("get") && this.mode.equals("send")) throw new IndexOutOfBoundsException();
+
+            System.out.println("\n\nHola, agente con nombre local " + getLocalName());
+            System.out.println("Se traera el archivo " + this.fileName);
+            
+            // Para migrar el agente
 			doMove(new ContainerID("Main-Container", null));
-		} catch (Exception e) {
+		} catch(IndexOutOfBoundsException e) {
+			System.out.println("\n\n\nError en parametros, reinicie el agente enviandole get/send filename\n\n\n");
+        } catch (Exception e) {
 			System.out.println("\n\n\nNo fue posible migrar el agente\n\n\n");
 		}
 	}
 
 	protected void afterMove() {
-		if(atHome()) {
+        Location next = atHome() ? new ContainerID("Main-Container", null) : this.origin;
+		if((atHome() && this.mode.equals("get")) || (!atHome() && this.mode.equals("send"))) {
             write(this.file);
             this.offset += this.file.getAmount();
             if (!this.file.finished()) {
-                doMove(new ContainerID("Main-Container", null));
+                doMove(next);
             } else {
                 System.out.println("\nSe termino de transferir el archivo " + this.fileName + "\n");
             }
 		} else {
-            this.file = read(this.fileName, this.offset, 2048);			
-			doMove(this.origin);
+            if(this.file == null || !this.file.finished()) {
+                this.file = read(this.fileName, this.offset, 2048);			
+                doMove(next);
+            } else {
+                System.out.println("\nSe termino de transferir el archivo " + this.fileName + "\n");
+            }
 		}
 	}
 

@@ -26,16 +26,21 @@ public class Ej3 extends Agent {
             this.mode = (String)getArguments()[0];
             this.fileName = (String)getArguments()[1];
 
-            if(this.mode.equals("get") && this.mode.equals("send")) throw new IndexOutOfBoundsException();
+            if(!this.mode.equals("get") && !this.mode.equals("send")) throw new IndexOutOfBoundsException();
 
             System.out.println("\n\nHola, agente con nombre local " + getLocalName());
-            System.out.println("Se traera el archivo " + this.fileName);
+            System.out.println("Se movera el archivo " + this.fileName);
             
             // Para migrar el agente
-			doMove(new ContainerID("Main-Container", null));
+            if(this.mode.equals("get")) {
+                doMove(new ContainerID("Main-Container", null));
+            } else {
+			    afterMove();     
+            }
 		} catch(IndexOutOfBoundsException e) {
 			System.out.println("\n\n\nError en parametros, reinicie el agente enviandole get/send filename\n\n\n");
         } catch (Exception e) {
+            e.printStackTrace();
 			System.out.println("\n\n\nNo fue posible migrar el agente\n\n\n");
 		}
 	}
@@ -66,7 +71,7 @@ public class Ej3 extends Agent {
 
     public int write(FileData fileData) {
         try {
-            File file = new File("Ej3/local/" + fileData.getName());
+            File file = new File("Ej3/" + (this.atHome() ? "local/" : "fs/") + fileData.getName());
             FileOutputStream fos = new FileOutputStream(file,true);
             fos.write(fileData.getData(),0,fileData.getAmount());
             fos.close();
@@ -80,7 +85,7 @@ public class Ej3 extends Agent {
 
     public FileData read(String fileName, int offset, int amount) {
         try {
-            File file = new File("Ej3/fs/" + fileName);
+            File file = new File("Ej3/" + (this.atHome() ? "local/" : "fs/") + fileName);
             FileInputStream fis = new FileInputStream(file);
             fis.skip(offset);
             byte[] bytesArray = new byte[Math.min(amount,fis.available())]; 
@@ -90,6 +95,7 @@ public class Ej3 extends Agent {
             System.out.println("Se leyeron " + amountRead + " bytes de " + fileName);
             return new FileData(fileName,bytesArray,finished,amountRead);
         } catch (IOException e) {
+            e.printStackTrace();
             System.out.println("Error leyendo archivo " + fileName);
             return null;
         }

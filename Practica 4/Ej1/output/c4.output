@@ -3,23 +3,23 @@ Soy el agente visitador@172.17.0.2:1099/JADE y visitare los contenedores: c1 c2 
 
 Migrando a destino: c1@<Unknown Host>
 Soy el agente visitador@172.17.0.2:1099/JADE y estoy en el contenedor c4
-He recorrido todos los contenedores especificados y me ha llevado un total de 294 milisegundos.
+He recorrido todos los contenedores especificados y me ha llevado un total de 646 milisegundos.
 Esta es la informacion que obtuve de los contenedores: 
 
 
 Contenedor: c1
-Memoria disponible: 106764376 bytes
-Tiempo de procesamiento: 0milisegundos
+Memoria disponible: 96068288 bytes
+Tiempo de procesamiento: 11milisegundos
 
 Contenedor: c2
-Memoria disponible: 106764416 bytes
-Tiempo de procesamiento: 1milisegundos
+Memoria disponible: 96013648 bytes
+Tiempo de procesamiento: 0milisegundos
 
 Contenedor: c3
-Memoria disponible: 106764304 bytes
+Memoria disponible: 96068400 bytes
 Tiempo de procesamiento: 1milisegundos
 
 Contenedor: c4
-Memoria disponible: 104774088 bytes
+Memoria disponible: 93724048 bytes
 Tiempo de procesamiento: 0milisegundos
 

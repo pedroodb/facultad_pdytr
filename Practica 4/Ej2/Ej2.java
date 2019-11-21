@@ -42,6 +42,7 @@ public class Ej2 extends Agent {
 				}
 			} catch (Exception e) {
 				this.result = -1;
+				e.printStackTrace();
 			}
 			doMove(this.origin);
 		}

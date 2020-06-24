@@ -6,7 +6,7 @@
 #define CLIENTID    "switch"
 #define QOS         0
 
-char* address = "localhost:1883";
+char* address = "tcp://localhost:1883";
 MQTTClient client;
 int switch_status = 0;
 

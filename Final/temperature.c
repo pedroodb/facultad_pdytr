@@ -5,10 +5,10 @@
 #include <time.h>
 #include "MQTTClient.h"
 
-#define ADDRESS     "localhost:1883"
 #define CLIENTID    "temperature"
 #define QOS         0
 
+char* address = "localhost:1883";
 MQTTClient client;
 
 
@@ -37,7 +37,11 @@ int main(int argc, char* argv[]) {
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
     int rc;
 
-    MQTTClient_create(&client, ADDRESS, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
+    if (argc >= 2) {
+        address = argv[1];
+    }
+
+    MQTTClient_create(&client, address, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
 
     if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
         printf("Fallo en la conexión con codigo de error %d\n", rc);

@@ -3,10 +3,10 @@
 #include <string.h>
 #include "MQTTClient.h"
 
-#define ADDRESS     "localhost:1883"
 #define CLIENTID    "control_panel"
 #define QOS         0
 
+char* address = "localhost:1883";
 MQTTClient client;
 char* temperature;
 
@@ -52,7 +52,11 @@ int main(int argc, char* argv[]) {
     int rc;
     int ch;
 
-    MQTTClient_create(&client, ADDRESS, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
+    if (argc >= 2) {
+        address = argv[1];
+    }
+
+    MQTTClient_create(&client, address, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
     MQTTClient_setCallbacks(client, NULL, connlost, msgarrvd, NULL);
 
     if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
@@ -71,7 +75,11 @@ int main(int argc, char* argv[]) {
         ch = getchar();
         switch (ch) {
             case '1':
-                printf("La temperatura es %s\n", temperature);
+                if (temperature) {
+                    printf("La temperatura es %s\n", temperature);
+                } else {
+                    printf("No se pudo acceder al valor de la temperatura\n");
+                }
                 break;
             case '2':
                 printf("Se modificó el estado de la luz\n");

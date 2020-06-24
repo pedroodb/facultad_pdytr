@@ -3,10 +3,10 @@
 #include <string.h>
 #include "MQTTClient.h"
 
-#define ADDRESS     "localhost:1883"
 #define CLIENTID    "switch"
 #define QOS         0
 
+char* address = "localhost:1883";
 MQTTClient client;
 int switch_status = 0;
 
@@ -59,7 +59,11 @@ int main(int argc, char* argv[]) {
     int rc;
     int ch;
 
-    MQTTClient_create(&client, ADDRESS, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
+    if (argc >= 2) {
+        address = argv[1];
+    }
+
+    MQTTClient_create(&client, address, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
     MQTTClient_setCallbacks(client, NULL, connlost, msgarrvd, NULL);
 
     if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) {

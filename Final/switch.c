@@ -15,7 +15,6 @@ int toggle() {
     return (switch_status = switch_status == 0 ? 1 : 0);
 }
 
-
 void report_status() {
 
     MQTTClient_message pubmsg = MQTTClient_message_initializer;
@@ -28,7 +27,6 @@ void report_status() {
     pubmsg.retained = 0;
     MQTTClient_publishMessage(client, "switch/status", &pubmsg, &token);
 }
-
 
 int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message) {
 
@@ -51,12 +49,9 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
     return 1;
 }
 
-
 void connlost(void *context, char *cause) {
-    printf("\nSe perdió la conexión\n");
-    printf("     causa: %s\n", cause);
+    printf("\nSe perdió la conexión, causa: %s\n", cause);
 }
-
 
 int main(int argc, char* argv[]) {
 
@@ -65,9 +60,6 @@ int main(int argc, char* argv[]) {
     int ch;
 
     MQTTClient_create(&client, ADDRESS, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
-    conn_opts.keepAliveInterval = 20;
-    conn_opts.cleansession = 1;
-
     MQTTClient_setCallbacks(client, NULL, connlost, msgarrvd, NULL);
 
     if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) {

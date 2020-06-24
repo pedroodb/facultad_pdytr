@@ -17,7 +17,6 @@ double get_temp() {
     return (double)rand();
 }
 
-
 // Esta función obtiene la temperatura y la publica
 void report_temp() {
 
@@ -33,15 +32,12 @@ void report_temp() {
     MQTTClient_publishMessage(client, "temperature", &pubmsg, &token);
 }
 
-
 int main(int argc, char* argv[]) {
     
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
     int rc;
 
     MQTTClient_create(&client, ADDRESS, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
-    conn_opts.keepAliveInterval = 20;
-    conn_opts.cleansession = 1;
 
     if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
         printf("Fallo en la conexión con codigo de error %d\n", rc);

@@ -13,13 +13,13 @@ char* temperature;
 
 int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message) {
     
-    // El mensaje contiene el comando (desde la consola se debe comparar agregando un \n, chequear si tambiend desde C)
+    // El mensaje contiene el comando a ejecutar
     if (strcmp(topicName, "temperature") == 0) {
-        temperature = malloc (1 + strlen ((char*)message->payload));
+        temperature = malloc(1 + strlen ((char*)message->payload));
         strcpy(temperature, (char*)message->payload);
     }
     else if (strcmp(topicName, "switch/status") == 0) {
-        printf("La luz se encuentra %s\n", atoi((char*)message->payload) == 0 ? "apagada" : "encendida");
+        printf("La luz se encuentra %s\n", atoi((char*)message->payload) ? "encendida" : "apagada");
     }
     else {
         printf("Se recibió un mensaje inválido\n");
@@ -43,8 +43,7 @@ void msg_to_switch(char* payload) {
 }
 
 void connlost(void *context, char *cause) {
-    printf("\nSe perdió la conexión\n");
-    printf("     causa: %s\n", cause);
+    printf("\nSe perdió la conexión, causa: %s\n", cause);
 }
 
 int main(int argc, char* argv[]) {
@@ -54,13 +53,10 @@ int main(int argc, char* argv[]) {
     int ch;
 
     MQTTClient_create(&client, ADDRESS, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
-    conn_opts.keepAliveInterval = 20;
-    conn_opts.cleansession = 1;
-
     MQTTClient_setCallbacks(client, NULL, connlost, msgarrvd, NULL);
 
     if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
-        printf("Failed to connect, return code %d\n", rc);
+        printf("Fallo en la conexión con codigo de error %d\n", rc);
         exit(EXIT_FAILURE);
     }
     

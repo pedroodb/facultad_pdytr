@@ -67,6 +67,10 @@ int main(int argc, char* argv[]) {
     MQTTClient_subscribe(client, "temperature", QOS);
     MQTTClient_subscribe(client, "switch/status", QOS);
 
+    printf("Elija una opcion entre:\n");
+    printf(" 1) Consultar la temperatura\n");
+    printf(" 2) Prender/apagar la luz\n");
+    printf(" 3) Consultar el estado de la luz\n");
     do {
         ch = getchar();
         switch (ch) {
@@ -83,7 +87,6 @@ int main(int argc, char* argv[]) {
             default:
                 break;
         }
-
     } while(ch!='Q' && ch != 'q');
 
     MQTTClient_unsubscribe(client, "temperature");

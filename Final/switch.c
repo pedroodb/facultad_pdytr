@@ -73,7 +73,10 @@ int main(int argc, char* argv[]) {
     if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
         printf("Fallo en la conexión con codigo de error %d\n", rc);
         exit(EXIT_FAILURE);
+    } else {
+        printf("El sensor se encuentra en linea\n");
     }
+    
     
     MQTTClient_subscribe(client, "switch/request", QOS);
 

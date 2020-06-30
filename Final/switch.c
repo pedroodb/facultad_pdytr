@@ -8,6 +8,7 @@
 
 char* address = "tcp://localhost:1883";
 MQTTClient client;
+
 int switch_status = 0;
 
 
@@ -18,14 +19,12 @@ int toggle() {
 void report_status() {
 
     MQTTClient_message pubmsg = MQTTClient_message_initializer;
-    MQTTClient_deliveryToken token;
 
     char* payload = switch_status ? "1" : "0";
     pubmsg.payload = payload;
     pubmsg.payloadlen = (int)strlen(payload);
     pubmsg.qos = QOS;
-    pubmsg.retained = 0;
-    MQTTClient_publishMessage(client, "switch/status", &pubmsg, &token);
+    MQTTClient_publishMessage(client, "switch/status", &pubmsg, NULL);
 }
 
 int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message) {

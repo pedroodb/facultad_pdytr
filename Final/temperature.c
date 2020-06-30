@@ -21,15 +21,13 @@ double get_temp() {
 void report_temp() {
 
     MQTTClient_message pubmsg = MQTTClient_message_initializer;
-    MQTTClient_deliveryToken token;
 
     char* buff;
     char* payload = gcvt(get_temp(),4,buff);
     pubmsg.payload = payload;
     pubmsg.payloadlen = (int)strlen(payload);
     pubmsg.qos = QOS;
-    pubmsg.retained = 0;
-    MQTTClient_publishMessage(client, "temperature", &pubmsg, &token);
+    MQTTClient_publishMessage(client, "temperature", &pubmsg, NULL);
 }
 
 int main(int argc, char* argv[]) {

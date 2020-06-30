@@ -8,6 +8,7 @@
 
 char* address = "tcp://localhost:1883";
 MQTTClient client;
+
 char* temperature;
 
 
@@ -33,13 +34,11 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
 void msg_to_switch(char* payload) {
 
     MQTTClient_message pubmsg = MQTTClient_message_initializer;
-    MQTTClient_deliveryToken token;
 
     pubmsg.payload = payload;
     pubmsg.payloadlen = (int)strlen(payload);
     pubmsg.qos = QOS;
-    pubmsg.retained = 0;
-    MQTTClient_publishMessage(client, "switch/request", &pubmsg, &token);
+    MQTTClient_publishMessage(client, "switch/request", &pubmsg, NULL);
 }
 
 void connlost(void *context, char *cause) {

@@ -14,7 +14,6 @@ char* temperature;
 
 int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message) {
     
-    // El mensaje contiene el comando a ejecutar
     if (strcmp(topicName, "temperature") == 0) {
         temperature = malloc(1 + strlen ((char*)message->payload));
         strcpy(temperature, (char*)message->payload);

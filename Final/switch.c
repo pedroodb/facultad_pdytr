@@ -31,7 +31,7 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
 
     char* content = (char*)message->payload;
 
-    // El mensaje contiene el comando (desde la consola se debe comparar agregando un \n, chequear si tambiend desde C)
+    // El mensaje contiene el comando a ejecutar
     if (strcmp(content, "toggle") == 0) {
         printf("Se activó el interruptor, el estado es ahora %d\n", toggle());
     }

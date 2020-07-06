@@ -1,42 +1,54 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <time.h>
 #include <signal.h>
 #include "MQTTClient.h"
 
-#define CLIENTID    "d:yj7gpz:Sensor:TEMPERATURE1"
+#define CLIENTID    "d:yj7gpz:Switch:LIGHTSWITCH1"
 #define QOS         0
 #define ADDRESS     "yj7gpz.messaging.internetofthings.ibmcloud.com:1883"
 
 MQTTClient client;
+int switch_status = 0;
 int finished = 0;
 
 
-double get_temp() {
-    // Aquí se debiera obtener la temperatura del sensor
-    return (double)rand();
+int toggle() {
+    return (switch_status = switch_status == 0 ? 1 : 0);
 }
 
-// Esta función obtiene la temperatura y la publica
-void report_temp() {
+void report_status() {
 
     MQTTClient_message pubmsg = MQTTClient_message_initializer;
 
-    char* temp = malloc(4);
-    gcvt(get_temp(),4,temp);
-    char* payload = malloc(strlen(temp) + strlen("{\"temperature\":}") + 1);
-    sprintf(payload, "{\"temperature\":%s}", temp);
-
+    char* payload = switch_status ? "{\"status\":true}" : "{\"status\":false}";
     pubmsg.payload = payload;
     pubmsg.payloadlen = (int)strlen(payload);
     pubmsg.qos = QOS;
-    MQTTClient_publishMessage(client, "iot-2/evt/temperature/fmt/json", &pubmsg, NULL);
-
-    free(payload);
-    free(temp);
+    MQTTClient_publishMessage(client, "iot-2/evt/switch/fmt/json", &pubmsg, NULL);
 }
+
+int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message) {
+
+    char* content = (char*)message->payload;
+
+    // El mensaje contiene el comando a ejecutar
+    if (strcmp(content, "toggle") == 0) {
+        printf("Se activó el interruptor, el estado es ahora %d\n", toggle());
+    }
+    else if (strcmp(content, "status") == 0) {
+        printf("Reportando estado %d\n", switch_status);
+        report_status();
+    }
+    else {
+        printf("Se recibió un comando inválido\n");
+    }
+
+    MQTTClient_freeMessage(&message);
+    MQTTClient_free(topicName);
+    return 1;
+}
+
 
 void connlost(void *context, char *cause) {
     printf("\nSe perdió la conexión, causa: %s\n", cause);
@@ -48,16 +60,17 @@ void handle_sigint(int sig) {
 }
 
 int main(int argc, char* argv[]) {
-    
+
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
     conn_opts.username = "use-token-auth";
     conn_opts.password = "PDyTR2020";
 
     int rc;
+    int ch;
 
     signal(SIGTSTP, handle_sigint);
     MQTTClient_create(&client, ADDRESS, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
-    MQTTClient_setCallbacks(client, NULL, connlost, NULL, NULL);
+    MQTTClient_setCallbacks(client, NULL, connlost, msgarrvd, NULL);
 
     if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
         printf("Fallo en la conexión con codigo de error %d\n", rc);
@@ -65,14 +78,14 @@ int main(int argc, char* argv[]) {
     } else {
         printf("El sensor se encuentra en linea\n");
     }
+    
+    MQTTClient_subscribe(client, "iot-2/cmd/switch/fmt/json", QOS);
 
-    // El sensor reportará la temperatura cada 1 segundo
-    while(!finished) {
-        sleep(1);
-        report_temp();
-    }
+    report_status();
+    while (!finished) {}
 
-    printf("\nDesconectando\n"); 
+    printf("\nDesconectando\n");
+    MQTTClient_unsubscribe(client, "iot-2/cmd/switch/fmt/json");
     MQTTClient_disconnect(client, 10000);
     MQTTClient_destroy(&client);
     return rc;

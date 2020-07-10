@@ -5,8 +5,8 @@
 #include "MQTTClient.h"
 
 #define CLIENTID    "d:yj7gpz:Switch:LIGHTSWITCH1"
-#define QOS         0
 #define ADDRESS     "yj7gpz.messaging.internetofthings.ibmcloud.com:1883"
+#define QOS         0
 
 MQTTClient client;
 int switch_status = 0;
@@ -25,7 +25,7 @@ void report_status() {
     pubmsg.payload = payload;
     pubmsg.payloadlen = (int)strlen(payload);
     pubmsg.qos = QOS;
-    MQTTClient_publishMessage(client, "iot-2/evt/switch/fmt/json", &pubmsg, NULL);
+    MQTTClient_publishMessage(client, "iot-2/evt/switch_status/fmt/json", &pubmsg, NULL);
 }
 
 int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message) {
@@ -68,7 +68,6 @@ int main(int argc, char* argv[]) {
     int rc;
     int ch;
 
-    signal(SIGTSTP, handle_sigint);
     MQTTClient_create(&client, ADDRESS, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
     MQTTClient_setCallbacks(client, NULL, connlost, msgarrvd, NULL);
 
@@ -79,13 +78,14 @@ int main(int argc, char* argv[]) {
         printf("El sensor se encuentra en linea\n");
     }
     
-    MQTTClient_subscribe(client, "iot-2/cmd/switch/fmt/json", QOS);
+    signal(SIGTSTP, handle_sigint);
 
+    MQTTClient_subscribe(client, "iot-2/cmd/switch_request/fmt/json", QOS);
     report_status();
     while (!finished) {}
 
     printf("\nDesconectando\n");
-    MQTTClient_unsubscribe(client, "iot-2/cmd/switch/fmt/json");
+    MQTTClient_unsubscribe(client, "iot-2/cmd/switch_request/fmt/json");
     MQTTClient_disconnect(client, 10000);
     MQTTClient_destroy(&client);
     return rc;

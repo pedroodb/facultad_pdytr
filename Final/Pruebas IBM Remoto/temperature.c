@@ -7,8 +7,8 @@
 #include "MQTTClient.h"
 
 #define CLIENTID    "d:yj7gpz:Sensor:TEMPERATURE1"
-#define QOS         0
 #define ADDRESS     "yj7gpz.messaging.internetofthings.ibmcloud.com:1883"
+#define QOS         0
 
 MQTTClient client;
 int finished = 0;
@@ -55,7 +55,6 @@ int main(int argc, char* argv[]) {
 
     int rc;
 
-    signal(SIGTSTP, handle_sigint);
     MQTTClient_create(&client, ADDRESS, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
     MQTTClient_setCallbacks(client, NULL, connlost, NULL, NULL);
 
@@ -65,6 +64,8 @@ int main(int argc, char* argv[]) {
     } else {
         printf("El sensor se encuentra en linea\n");
     }
+
+    signal(SIGTSTP, handle_sigint);
 
     // El sensor reportará la temperatura cada 1 segundo
     while(!finished) {

@@ -30,13 +30,15 @@ void report_status() {
 
 int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message) {
 
-    char* content = (char*)message->payload;
+    char* content = strtok((char*)message->payload, ":");
+    content = strtok(NULL, ":");
+    content = strtok(content, "}");
 
     // El mensaje contiene el comando a ejecutar
-    if (strcmp(content, "toggle") == 0) {
+    if (strcmp(content, "\"toggle\"") == 0) {
         printf("Se activó el interruptor, el estado es ahora %d\n", toggle());
     }
-    else if (strcmp(content, "status") == 0) {
+    else if (strcmp(content, "\"status\"") == 0) {
         printf("Reportando estado %d\n", switch_status);
         report_status();
     }

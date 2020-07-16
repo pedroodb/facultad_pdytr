@@ -28,12 +28,14 @@ const getSwitchStatus = () => axios.get("device/types/Switch/devices/LIGHTSWITCH
     res => console.log(res.data)
 ).catch(logError)
 
-const toggleSwitchStatus = () => axios.post("https://yj7gpz.messaging.internetofthings.ibmcloud.com/api/v0002/device/types/Switch/devices/LIGHTSWITCH1/events/switch_request", {}, {
+const toggleSwitchStatus = () => axios.post("https://yj7gpz.messaging.internetofthings.ibmcloud.com/api/v0002/application/types/Switch/devices/LIGHTSWITCH1/commands/switch_request", {
+    request: "toggle"
+}, {
     headers: {
         accept: "application/json"
     },
     auth: {
-        username: "use-token-auth",
+        username: "a-yj7gpz-huxbxokmhr",
         password: "e0y()oCB1k)Mes8UzY"
     }
 }).then(

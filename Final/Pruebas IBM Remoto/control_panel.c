@@ -87,11 +87,11 @@ int main(int argc, char* argv[]) {
                 }
                 break;
             case '2':
-                msg_to_switch("toggle");
+                msg_to_switch("{request:\"toggle\"}");
                 printf("Se modificó el estado de la luz\n");
                 break;
             case '3':
-                msg_to_switch("status");
+                msg_to_switch("{request:\"status\"");
                 break;
             default:
                 break;
